@@ -29,7 +29,7 @@ HELP_TEXT = """\
 """
 
 
-class HelpScreen(ModalScreen):
+class HelpScreen(ModalScreen[None]):
     """Modal screen showing keyboard shortcuts."""
 
     BINDINGS = [

@@ -1,3 +1,5 @@
+from typing import Any
+
 from rich.syntax import Syntax
 from rich.text import Text
 from textual.binding import Binding
@@ -23,7 +25,7 @@ class DiffViewer(RichLog):
     }
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(highlight=False, markup=False, wrap=False, auto_scroll=False, **kwargs)
         self._diff_content: str = ""
 

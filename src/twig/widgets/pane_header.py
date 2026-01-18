@@ -1,3 +1,5 @@
+from typing import Any
+
 from textual.widgets import Static
 
 
@@ -14,5 +16,5 @@ class PaneHeader(Static):
     }
     """
 
-    def __init__(self, title: str, **kwargs):
+    def __init__(self, title: str, **kwargs: Any) -> None:
         super().__init__(title, **kwargs)

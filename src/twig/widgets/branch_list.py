@@ -1,3 +1,5 @@
+from typing import Any
+
 from textual.binding import Binding
 from textual.message import Message
 from textual.widgets import OptionList
@@ -32,7 +34,7 @@ class BranchListView(OptionList):
             self.branch = branch
             super().__init__()
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._branches: list[Branch] = []
         self._filtered_branches: list[Branch] = []

@@ -17,7 +17,7 @@ from .widgets import (
 )
 
 
-class TwigApp(App):
+class TwigApp(App[None]):
     """Twig - Git Branch Manager TUI Application."""
 
     TITLE = "Twig - Branch Manager"
@@ -210,7 +210,7 @@ class TwigApp(App):
             self.notify("Cannot delete current branch", severity="error")
             return
 
-        async def handle_result(confirmed: bool) -> None:
+        async def handle_result(confirmed: bool | None) -> None:
             if confirmed:
                 try:
                     # Try normal delete first, then force if modal indicated
@@ -227,7 +227,7 @@ class TwigApp(App):
                     else:
                         self.notify(f"Error deleting branch: {e}", severity="error")
 
-        async def handle_force_delete(confirmed: bool) -> None:
+        async def handle_force_delete(confirmed: bool | None) -> None:
             if confirmed:
                 try:
                     await self.git.delete_branch(branch.name, force=True)

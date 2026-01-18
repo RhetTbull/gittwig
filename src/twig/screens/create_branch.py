@@ -1,3 +1,5 @@
+from typing import Any
+
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
@@ -57,7 +59,7 @@ class CreateBranchModal(ModalScreen[str | None]):
     }
     """
 
-    def __init__(self, start_point: str | None = None, **kwargs):
+    def __init__(self, start_point: str | None = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._start_point = start_point
 

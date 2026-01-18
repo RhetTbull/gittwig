@@ -1,3 +1,5 @@
+from typing import Any
+
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
@@ -60,7 +62,7 @@ class ConfirmDeleteModal(ModalScreen[bool]):
     }
     """
 
-    def __init__(self, branch_name: str, is_unmerged: bool = False, **kwargs):
+    def __init__(self, branch_name: str, is_unmerged: bool = False, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._branch_name = branch_name
         self._is_unmerged = is_unmerged
