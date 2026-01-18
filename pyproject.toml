@@ -10,7 +10,7 @@ requires-python = ">=3.12"
 dependencies = ["textual>=0.80.0"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "pytest-asyncio>=0.24", "ruff>=0.8", "mypy>=1.13"]
+dev = ["bump2version", "pytest>=8.0", "pytest-asyncio>=0.24", "ruff>=0.8", "mypy>=1.13"]
 
 [project.scripts]
 twig = "gittwig.__main__:main"
