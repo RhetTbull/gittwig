@@ -99,10 +99,13 @@ class ConfirmDeleteModal(ModalScreen[bool]):
     def _submit(self) -> None:
         """Submit deletion request."""
         if self._is_unmerged and not self._force_delete:
-            # If unmerged and not force, dismiss as cancelled
-            self.dismiss(False)
-        else:
-            self.dismiss(True)
+            # If unmerged and not force, show reminder to check the box
+            self.app.notify(
+                "Check the force delete box to delete unmerged branch",
+                severity="warning",
+            )
+            return
+        self.dismiss(True)
 
     def action_confirm(self) -> None:
         """Confirm deletion."""
