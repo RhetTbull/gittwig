@@ -1,5 +1,5 @@
 [project]
-name = "gitbranch"
+name = "twig"
 version = "0.1.0"
 description = "A terminal TUI application for managing Git branches"
 readme = "README.md"
@@ -13,7 +13,7 @@ dependencies = ["textual>=0.80.0"]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.24", "ruff>=0.8", "mypy>=1.13"]
 
 [project.scripts]
-gitbranch = "gitbranch.__main__:main"
+twig = "twig.__main__:main"
 
 [build-system]
 requires = ["uv_build>=0.9.2,<0.10.0"]

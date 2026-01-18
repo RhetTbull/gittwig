@@ -2,8 +2,8 @@
 
 import pytest
 
-from gitbranch.models import Branch, SyncStatus
-from gitbranch.widgets import BranchListView
+from twig.models import Branch, SyncStatus
+from twig.widgets import BranchListView
 
 
 @pytest.mark.asyncio

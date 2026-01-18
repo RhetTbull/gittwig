@@ -17,10 +17,10 @@ from .widgets import (
 )
 
 
-class GitBranchApp(App):
-    """Git Branch Manager TUI Application."""
+class TwigApp(App):
+    """Twig - Git Branch Manager TUI Application."""
 
-    TITLE = "GitBranch - Branch Manager"
+    TITLE = "Twig - Branch Manager"
     CSS_PATH = "styles.tcss"
 
     BINDINGS = [
@@ -50,7 +50,7 @@ class GitBranchApp(App):
         self._filter_active: bool = False
 
     def compose(self) -> ComposeResult:
-        yield Static("GitBranch - Branch Manager", id="app-title")
+        yield Static("Twig - Branch Manager", id="app-title")
 
         with Horizontal(id="main-container"):
             # Left pane: Branch list

@@ -1,17 +1,17 @@
-"""Entry point for gitbranch CLI."""
+"""Entry point for twig CLI."""
 
 import sys
 from pathlib import Path
 
-from .app import GitBranchApp
+from .app import TwigApp
 
 
 def main() -> int:
-    """Run the GitBranch TUI application."""
+    """Run the Twig TUI application."""
     # Accept optional path argument
     repo_path = Path(sys.argv[1]) if len(sys.argv) > 1 else None
 
-    app = GitBranchApp(repo_path)
+    app = TwigApp(repo_path)
     app.run()
     return 0
 

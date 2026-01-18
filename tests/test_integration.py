@@ -1,14 +1,14 @@
-"""Integration tests for GitBranch app."""
+"""Integration tests for Twig app."""
 
 import pytest
 
-from gitbranch.app import GitBranchApp
+from twig.app import TwigApp
 
 
 @pytest.mark.asyncio
 async def test_app_starts(temp_git_repo):
     """Test that the app starts successfully."""
-    app = GitBranchApp(temp_git_repo)
+    app = TwigApp(temp_git_repo)
 
     async with app.run_test() as _:
         # App should be running
@@ -22,7 +22,7 @@ async def test_app_starts(temp_git_repo):
 @pytest.mark.asyncio
 async def test_app_loads_branches(temp_git_repo_with_branches):
     """Test that branches are loaded on startup."""
-    app = GitBranchApp(temp_git_repo_with_branches)
+    app = TwigApp(temp_git_repo_with_branches)
 
     async with app.run_test() as pilot:
         # Wait for data to load
@@ -35,7 +35,7 @@ async def test_app_loads_branches(temp_git_repo_with_branches):
 @pytest.mark.asyncio
 async def test_navigation_keys(temp_git_repo_with_branches):
     """Test vim navigation keys."""
-    app = GitBranchApp(temp_git_repo_with_branches)
+    app = TwigApp(temp_git_repo_with_branches)
 
     async with app.run_test() as pilot:
         await pilot.pause()
@@ -52,7 +52,7 @@ async def test_navigation_keys(temp_git_repo_with_branches):
 @pytest.mark.asyncio
 async def test_help_screen(temp_git_repo):
     """Test help screen opens and closes."""
-    app = GitBranchApp(temp_git_repo)
+    app = TwigApp(temp_git_repo)
 
     async with app.run_test() as pilot:
         await pilot.pause()
@@ -75,7 +75,7 @@ async def test_help_screen(temp_git_repo):
 @pytest.mark.asyncio
 async def test_create_branch_modal(temp_git_repo):
     """Test create branch modal opens."""
-    app = GitBranchApp(temp_git_repo)
+    app = TwigApp(temp_git_repo)
 
     async with app.run_test() as pilot:
         await pilot.pause()
@@ -95,7 +95,7 @@ async def test_create_branch_modal(temp_git_repo):
 @pytest.mark.asyncio
 async def test_filter_branches(temp_git_repo_with_branches):
     """Test branch filtering with / key."""
-    app = GitBranchApp(temp_git_repo_with_branches)
+    app = TwigApp(temp_git_repo_with_branches)
 
     async with app.run_test() as pilot:
         await pilot.pause()
@@ -116,7 +116,7 @@ async def test_filter_branches(temp_git_repo_with_branches):
 @pytest.mark.asyncio
 async def test_quit_app(temp_git_repo):
     """Test quitting the app."""
-    app = GitBranchApp(temp_git_repo)
+    app = TwigApp(temp_git_repo)
 
     async with app.run_test() as pilot:
         await pilot.pause()
