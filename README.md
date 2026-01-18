@@ -2,6 +2,8 @@
 
 A terminal user interface (TUI) for viewing and switching git branches, built with Python and [Textual](https://textual.textualize.io/).
 
+I built this because I wanted a quick way to view git branches and switch between them. Vibe-coded with Claude code.
+
 ## Features
 
 - Browse local and remote branches in a navigable list
