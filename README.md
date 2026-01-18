@@ -2,7 +2,7 @@
 
 A terminal user interface (TUI) for viewing and switching git branches, built with Python and [Textual](https://textual.textualize.io/).
 
-I built this because I wanted a quick way to view git branches and switch between them. Vibe-coded with Claude code.
+I built this because I wanted a quick way to view git branches and switch between them. Vibe-
 
 ## Features
 
@@ -21,15 +21,7 @@ I built this because I wanted a quick way to view git branches and switch betwee
 Requires Python 3.12 or later.
 
 ```bash
-# Clone the repository
-git clone https://github.com/RhetTbull/gittwig.git
-cd gittwig
-
-# Install with uv (recommended)
-uv sync
-
-# Or install with pip
-pip install -e .
+uv tool install gittwig
 ```
 
 ## Usage
