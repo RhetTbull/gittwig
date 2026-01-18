@@ -20,8 +20,16 @@ I built this because I wanted a quick way to view git branches and switch betwee
 
 Requires Python 3.12 or later.
 
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and run:
+
 ```bash
 uv tool install gittwig
+```
+
+To run with `uv` without installing:
+
+```bash
+uv tool run --from gittwig twig
 ```
 
 ## Usage
