@@ -48,6 +48,7 @@ class TwigApp(App[None]):
         self._panes: list[str] = ["branch-list", "file-list", "diff-viewer"]
         self._current_pane_index: int = 0
         self._filter_active: bool = False
+        self._viewing_uncommitted: bool = False
 
     def compose(self) -> ComposeResult:
         yield Static("Twig - Branch Manager", id="app-title")
@@ -114,19 +115,24 @@ class TwigApp(App[None]):
     async def _load_branch_details(self, branch: Branch) -> None:
         """Load files and commits for a branch."""
         try:
-            # Load changed files (compared to default branch)
-            files = await self.git.get_changed_files(branch.name, self._default_branch)
-            file_list = self.query_one("#file-list", FileListView)
-            file_list.set_files(files)
-
-            # Load commits unique to this branch (not in default branch)
-            # If viewing the default branch itself, show recent commits without filter
+            # If viewing the default branch, show uncommitted changes
+            # Otherwise show changes compared to default branch
             if branch.name == self._default_branch:
+                self._viewing_uncommitted = True
+                files = await self.git.get_uncommitted_changes()
                 commits = await self.git.get_commits(branch.name, base=None, limit=30)
             else:
+                self._viewing_uncommitted = False
+                files = await self.git.get_changed_files(
+                    branch.name, self._default_branch
+                )
                 commits = await self.git.get_commits(
                     branch.name, base=self._default_branch, limit=30
                 )
+
+            file_list = self.query_one("#file-list", FileListView)
+            file_list.set_files(files)
+
             commit_list = self.query_one("#commit-list", CommitListView)
             commit_list.set_commits(commits)
 
@@ -139,7 +145,10 @@ class TwigApp(App[None]):
     async def _load_file_diff(self, file_change: FileChange, branch: Branch) -> None:
         """Load diff for a specific file."""
         try:
-            diff = await self.git.get_file_diff(file_change.path, branch.name)
+            if self._viewing_uncommitted:
+                diff = await self.git.get_uncommitted_file_diff(file_change.path)
+            else:
+                diff = await self.git.get_file_diff(file_change.path, branch.name)
             diff_viewer = self.query_one("#diff-viewer", DiffViewer)
             diff_viewer.set_diff(diff)
         except Exception as e:
@@ -215,7 +224,9 @@ class TwigApp(App[None]):
                 try:
                     # Try normal delete first, then force if modal indicated
                     await self.git.delete_branch(branch.name, force=False)
-                    self.notify(f"Deleted branch '{branch.name}'", severity="information")
+                    self.notify(
+                        f"Deleted branch '{branch.name}'", severity="information"
+                    )
                     await self._refresh_branches()
                 except Exception as e:
                     if "not fully merged" in str(e).lower():
@@ -231,7 +242,9 @@ class TwigApp(App[None]):
             if confirmed:
                 try:
                     await self.git.delete_branch(branch.name, force=True)
-                    self.notify(f"Force deleted branch '{branch.name}'", severity="information")
+                    self.notify(
+                        f"Force deleted branch '{branch.name}'", severity="information"
+                    )
                     await self._refresh_branches()
                 except Exception as e:
                     self.notify(f"Error deleting branch: {e}", severity="error")

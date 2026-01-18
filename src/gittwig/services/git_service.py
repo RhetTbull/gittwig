@@ -3,13 +3,7 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
-from ..models.git_models import (
-    Branch,
-    Commit,
-    FileChange,
-    FileChangeType,
-    SyncStatus,
-)
+from ..models.git_models import Branch, Commit, FileChange, FileChangeType, SyncStatus
 
 
 class GitError(Exception):
@@ -51,7 +45,9 @@ class GitService:
         stdout, stderr = await proc.communicate()
 
         if check and proc.returncode != 0:
-            error_msg = stderr.decode().strip() or f"Git command failed: {' '.join(args)}"
+            error_msg = (
+                stderr.decode().strip() or f"Git command failed: {' '.join(args)}"
+            )
             raise GitError(error_msg)
 
         return stdout.decode().strip()
@@ -249,9 +245,7 @@ class GitService:
 
         try:
             # Get file list with status
-            output = await self._run_git(
-                "diff", "--name-status", f"{base}...{branch}"
-            )
+            output = await self._run_git("diff", "--name-status", f"{base}...{branch}")
         except GitError:
             return []
 
@@ -285,9 +279,7 @@ class GitService:
 
         # Get stats for additions/deletions
         try:
-            stat_output = await self._run_git(
-                "diff", "--numstat", f"{base}...{branch}"
-            )
+            stat_output = await self._run_git("diff", "--numstat", f"{base}...{branch}")
             stat_map = {}
             for line in stat_output.splitlines():
                 parts = line.split("\t")
@@ -322,9 +314,7 @@ class GitService:
             base = await self.get_default_branch()
 
         try:
-            return await self._run_git(
-                "diff", f"{base}...{branch}", "--", file_path
-            )
+            return await self._run_git("diff", f"{base}...{branch}", "--", file_path)
         except GitError:
             return ""
 
@@ -339,9 +329,7 @@ class GitService:
         """
         await self._run_git("checkout", branch)
 
-    async def create_branch(
-        self, name: str, start_point: str | None = None
-    ) -> Branch:
+    async def create_branch(self, name: str, start_point: str | None = None) -> Branch:
         """Create a new branch.
 
         Args:
@@ -390,9 +378,7 @@ class GitService:
             args.append("--prune")
         return await self._run_git(*args, check=False)
 
-    async def push(
-        self, branch: str | None = None, set_upstream: bool = True
-    ) -> str:
+    async def push(self, branch: str | None = None, set_upstream: bool = True) -> str:
         """Push branch to remote.
 
         Args:
@@ -426,3 +412,99 @@ class GitService:
             branch = await self.get_current_branch()
 
         return await self._run_git("pull", "origin", branch)
+
+    async def get_uncommitted_changes(self) -> list[FileChange]:
+        """Get uncommitted changes (both staged and unstaged).
+
+        Returns:
+            List of FileChange objects for modified working directory files.
+        """
+        files_map: dict[str, FileChange] = {}
+
+        change_type_map = {
+            "M": FileChangeType.MODIFIED,
+            "A": FileChangeType.ADDED,
+            "D": FileChangeType.DELETED,
+            "R": FileChangeType.RENAMED,
+            "C": FileChangeType.COPIED,
+        }
+
+        # Get unstaged changes
+        try:
+            unstaged_output = await self._run_git("diff", "--name-status")
+            for line in unstaged_output.splitlines():
+                if not line.strip():
+                    continue
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    status_char = parts[0][0]
+                    path = parts[-1]
+                    old_path = parts[1] if len(parts) > 2 else None
+                    change_type = change_type_map.get(
+                        status_char, FileChangeType.MODIFIED
+                    )
+                    files_map[path] = FileChange(
+                        path=path,
+                        change_type=change_type,
+                        old_path=old_path,
+                    )
+        except GitError:
+            pass
+
+        # Get staged changes (these take precedence for status)
+        try:
+            staged_output = await self._run_git("diff", "--name-status", "--cached")
+            for line in staged_output.splitlines():
+                if not line.strip():
+                    continue
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    status_char = parts[0][0]
+                    path = parts[-1]
+                    old_path = parts[1] if len(parts) > 2 else None
+                    change_type = change_type_map.get(
+                        status_char, FileChangeType.MODIFIED
+                    )
+                    files_map[path] = FileChange(
+                        path=path,
+                        change_type=change_type,
+                        old_path=old_path,
+                    )
+        except GitError:
+            pass
+
+        files = list(files_map.values())
+
+        # Get stats for additions/deletions (combined staged + unstaged)
+        try:
+            stat_output = await self._run_git("diff", "--numstat", "HEAD")
+            stat_map = {}
+            for line in stat_output.splitlines():
+                parts = line.split("\t")
+                if len(parts) >= 3:
+                    adds = int(parts[0]) if parts[0] != "-" else 0
+                    dels = int(parts[1]) if parts[1] != "-" else 0
+                    path = parts[2]
+                    stat_map[path] = (adds, dels)
+
+            for f in files:
+                if f.path in stat_map:
+                    f.additions, f.deletions = stat_map[f.path]
+        except GitError:
+            pass
+
+        return files
+
+    async def get_uncommitted_file_diff(self, file_path: str) -> str:
+        """Get diff for an uncommitted file (staged + unstaged changes).
+
+        Args:
+            file_path: Path to the file.
+
+        Returns:
+            Diff output as string.
+        """
+        try:
+            return await self._run_git("diff", "HEAD", "--", file_path)
+        except GitError:
+            return ""

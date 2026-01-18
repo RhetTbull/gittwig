@@ -49,8 +49,7 @@ class BranchListView(OptionList):
         """Apply current filter and update display."""
         if self._filter_text:
             self._filtered_branches = [
-                b for b in self._branches
-                if self._filter_text.lower() in b.name.lower()
+                b for b in self._branches if self._filter_text.lower() in b.name.lower()
             ]
         else:
             self._filtered_branches = self._branches.copy()
@@ -63,9 +62,16 @@ class BranchListView(OptionList):
         for branch in self._filtered_branches:
             # Format: "* main [=]" or "  feature/auth [↑]"
             prefix = "* " if branch.is_current else "  "
-            status = f" [{branch.sync_status.value}]" if branch.sync_status.value else ""
+            status = (
+                f" [{branch.sync_status.value}]" if branch.sync_status.value else ""
+            )
             label = f"{prefix}{branch.name}{status}"
             self.add_option(Option(label, id=branch.name))
+
+        # Emit highlight message for currently highlighted branch to update file list
+        branch = self.get_highlighted_branch()
+        if branch:
+            self.post_message(self.BranchHighlighted(branch))
 
     def set_filter(self, text: str) -> None:
         """Set filter text for branches."""
@@ -98,10 +104,7 @@ class BranchListView(OptionList):
         """Move cursor down by half page."""
         if self.option_count > 0:
             # Move by ~10 items or to end
-            new_idx = min(
-                (self.highlighted or 0) + 10,
-                self.option_count - 1
-            )
+            new_idx = min((self.highlighted or 0) + 10, self.option_count - 1)
             self.highlighted = new_idx
 
     def action_page_up(self) -> None:
@@ -111,9 +114,7 @@ class BranchListView(OptionList):
             new_idx = max((self.highlighted or 0) - 10, 0)
             self.highlighted = new_idx
 
-    def on_option_list_option_selected(
-        self, event: OptionList.OptionSelected
-    ) -> None:
+    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
         """Handle option selection."""
         branch = self.get_selected_branch()
         if branch:
