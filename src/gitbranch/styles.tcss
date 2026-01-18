@@ -1,0 +1,123 @@
+/* Main app styles */
+Screen {
+    background: $surface;
+}
+
+#app-title {
+    dock: top;
+    text-align: center;
+    text-style: bold;
+    background: $primary;
+    color: $text;
+    height: 1;
+}
+
+#main-container {
+    layout: horizontal;
+    height: 1fr;
+}
+
+#left-pane {
+    width: 25%;
+    min-width: 20;
+    border-right: solid $primary-darken-2;
+}
+
+#middle-pane {
+    width: 25%;
+    min-width: 20;
+    border-right: solid $primary-darken-2;
+}
+
+#right-pane {
+    width: 50%;
+    min-width: 30;
+}
+
+/* Pane headers */
+.pane-header {
+    background: $primary-darken-1;
+    color: $text;
+    text-align: center;
+    height: 1;
+    text-style: bold;
+}
+
+/* Lists container */
+.pane-content {
+    height: 1fr;
+}
+
+/* Middle pane split */
+#middle-top {
+    height: 50%;
+    border-bottom: solid $primary-darken-2;
+}
+
+#middle-bottom {
+    height: 50%;
+}
+
+/* OptionList styling */
+OptionList {
+    border: none;
+    height: 1fr;
+    scrollbar-gutter: stable;
+}
+
+OptionList:focus {
+    border: none;
+}
+
+OptionList > .option-list--option-highlighted {
+    background: $primary;
+    color: $text;
+}
+
+/* Diff viewer */
+DiffViewer {
+    height: 1fr;
+    border: none;
+}
+
+/* Status bar */
+#status-bar {
+    dock: bottom;
+    height: 1;
+    background: $primary-darken-2;
+    color: $text-muted;
+    padding: 0 1;
+}
+
+/* Filter input */
+#filter-container {
+    dock: bottom;
+    height: 1;
+    display: none;
+}
+
+#filter-container.visible {
+    display: block;
+}
+
+#filter-input {
+    width: 100%;
+    border: none;
+}
+
+/* Notifications */
+.notification {
+    dock: bottom;
+    height: 1;
+    background: $primary;
+    color: $text;
+    text-align: center;
+}
+
+.notification-error {
+    background: $error;
+}
+
+.notification-success {
+    background: $success;
+}
