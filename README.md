@@ -4,6 +4,8 @@ A terminal user interface (TUI) for viewing and switching git branches, built wi
 
 I built this because I wanted a quick way to view git branches and switch between them. Vibe-coded with Claude Code.
 
+This provides a fast, easy way to browse branches, see the commit history for a given branch, identify files changed in a branch, and view file diffs with syntax highlighting. As an open source developer who works with many branches across multiple projects, this is very helpful for figuring out where I left off and juggling multiple branches.
+
 ![Screenshot](twig.svg)
 
 ## Features
