@@ -2,7 +2,7 @@
 
 import pytest
 
-from twig.services.git_service import GitError, GitService
+from gittwig.services.git_service import GitError, GitService
 
 
 @pytest.mark.asyncio

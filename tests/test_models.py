@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from twig.models.git_models import (
+from gittwig.models.git_models import (
     Branch,
     Commit,
     FileChange,

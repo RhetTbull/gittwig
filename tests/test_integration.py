@@ -2,7 +2,7 @@
 
 import pytest
 
-from twig.app import TwigApp
+from gittwig.app import TwigApp
 
 
 @pytest.mark.asyncio
