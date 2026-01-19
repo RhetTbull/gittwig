@@ -26,6 +26,14 @@ HELP_TEXT = """\
   ?             Show this help
   q             Quit
   Escape        Close modal / cancel
+
+[bold]Branch Status Symbols[/bold]
+  *             Current branch (checked out)
+  [=]           Synced with remote
+  [↑]           Ahead of remote (unpushed commits)
+  [↓]           Behind remote (unpulled commits)
+  [↕]           Diverged (both ahead and behind)
+  [remote]      Remote-only (not checked out locally)
 """
 
 

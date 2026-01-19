@@ -24,12 +24,18 @@ class Branch:
     sync_status: SyncStatus = SyncStatus.NO_REMOTE
     ahead_count: int = 0
     behind_count: int = 0
+    is_remote_only: bool = False
 
     @property
     def display_name(self) -> str:
         """Format branch name for display."""
         prefix = "* " if self.is_current else "  "
-        status = f" [{self.sync_status.value}]" if self.sync_status.value else ""
+        if self.is_remote_only:
+            status = " [remote]"
+        elif self.sync_status.value:
+            status = f" [{self.sync_status.value}]"
+        else:
+            status = ""
         return f"{prefix}{self.name}{status}"
 
     @property
