@@ -1,5 +1,6 @@
 from typing import Any
 
+from rich.text import Text
 from textual.binding import Binding
 from textual.message import Message
 from textual.widgets import OptionList
@@ -60,18 +61,28 @@ class BranchListView(OptionList):
         """Update the option list display."""
         self.clear_options()
         for branch in self._filtered_branches:
-            # Format: "* main [=]" or "  feature/auth [↑]"
+            # Format: "* main [=]" or "  feature/auth [↑]" or "  remote-branch [remote]"
             prefix = "* " if branch.is_current else "  "
-            status = (
-                f" [{branch.sync_status.value}]" if branch.sync_status.value else ""
-            )
-            label = f"{prefix}{branch.name}{status}"
-            self.add_option(Option(label, id=branch.name))
+
+            if branch.is_remote_only:
+                # Remote-only branches: dimmed with [remote] indicator
+                rich_label = Text()
+                rich_label.append(prefix, style="dim")
+                rich_label.append(branch.name, style="dim italic")
+                rich_label.append(" [remote]", style="dim")
+                self.add_option(Option(rich_label, id=branch.name))
+            else:
+                # Local branches: normal formatting
+                status = (
+                    f" [{branch.sync_status.value}]" if branch.sync_status.value else ""
+                )
+                label = f"{prefix}{branch.name}{status}"
+                self.add_option(Option(label, id=branch.name))
 
         # Emit highlight message for currently highlighted branch to update file list
-        branch = self.get_highlighted_branch()
-        if branch:
-            self.post_message(self.BranchHighlighted(branch))
+        highlighted = self.get_highlighted_branch()
+        if highlighted:
+            self.post_message(self.BranchHighlighted(highlighted))
 
     def set_filter(self, text: str) -> None:
         """Set filter text for branches."""

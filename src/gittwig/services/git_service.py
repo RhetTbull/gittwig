@@ -318,16 +318,21 @@ class GitService:
         except GitError:
             return ""
 
-    async def checkout_branch(self, branch: str) -> None:
+    async def checkout_branch(self, branch: str, is_remote_only: bool = False) -> None:
         """Checkout a branch.
 
         Args:
             branch: Branch name to checkout.
+            is_remote_only: If True, create a local tracking branch from origin.
 
         Raises:
             GitError: If checkout fails.
         """
-        await self._run_git("checkout", branch)
+        if is_remote_only:
+            # Create a local tracking branch from the remote
+            await self._run_git("checkout", "--track", f"origin/{branch}")
+        else:
+            await self._run_git("checkout", branch)
 
     async def create_branch(self, name: str, start_point: str | None = None) -> Branch:
         """Create a new branch.
@@ -377,6 +382,65 @@ class GitService:
         if prune:
             args.append("--prune")
         return await self._run_git(*args, check=False)
+
+    async def has_remote_origin(self) -> bool:
+        """Check if remote 'origin' exists.
+
+        Returns:
+            True if origin remote exists.
+        """
+        try:
+            result = await self._run_git("remote", check=False)
+            return "origin" in result.split("\n")
+        except GitError:
+            return False
+
+    async def get_remote_only_branches(self) -> list[Branch]:
+        """Get branches that exist on remote but not locally.
+
+        Returns:
+            List of Branch objects for remote-only branches.
+        """
+        # Get local branch names
+        try:
+            local_output = await self._run_git("branch", "--format=%(refname:short)")
+            local_branches = set(local_output.splitlines())
+        except GitError:
+            local_branches = set()
+
+        # Get remote branch names (origin only)
+        try:
+            remote_output = await self._run_git(
+                "branch", "-r", "--format=%(refname:short)"
+            )
+        except GitError:
+            return []
+
+        remote_only_branches = []
+        for line in remote_output.splitlines():
+            if not line.strip():
+                continue
+
+            # Skip HEAD pointer
+            if line == "origin/HEAD":
+                continue
+
+            # Remote branches are formatted as "origin/branch-name"
+            if line.startswith("origin/"):
+                branch_name = line[7:]  # Remove "origin/" prefix
+
+                # Only include if not a local branch
+                if branch_name not in local_branches:
+                    remote_only_branches.append(
+                        Branch(
+                            name=branch_name,
+                            is_current=False,
+                            upstream=None,
+                            is_remote_only=True,
+                        )
+                    )
+
+        return remote_only_branches
 
     async def push(self, branch: str | None = None, set_upstream: bool = True) -> str:
         """Push branch to remote.

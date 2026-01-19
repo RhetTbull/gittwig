@@ -49,6 +49,7 @@ class TwigApp(App[None]):
         self._current_pane_index: int = 0
         self._filter_active: bool = False
         self._viewing_uncommitted: bool = False
+        self._has_remote: bool = False
 
     def compose(self) -> ComposeResult:
         yield Static("Twig - Branch Manager", id="app-title")
@@ -91,6 +92,11 @@ class TwigApp(App[None]):
         # Get default branch for comparisons
         self._default_branch = await self.git.get_default_branch()
 
+        # Check if remote origin exists and fetch
+        self._has_remote = await self.git.has_remote_origin()
+        if self._has_remote:
+            await self.git.fetch()
+
         # Load initial data
         await self._refresh_branches()
 
@@ -101,11 +107,21 @@ class TwigApp(App[None]):
         """Refresh the branch list."""
         try:
             branches = await self.git.get_branches()
+
+            # Include remote-only branches if remote exists
+            if self._has_remote:
+                remote_branches = await self.git.get_remote_only_branches()
+                # Combine and sort alphabetically by name
+                all_branches = branches + remote_branches
+                all_branches.sort(key=lambda b: b.name.lower())
+            else:
+                all_branches = branches
+
             branch_list = self.query_one("#branch-list", BranchListView)
-            branch_list.set_branches(branches)
+            branch_list.set_branches(all_branches)
 
             # Find and select current branch
-            for branch in branches:
+            for branch in all_branches:
                 if branch.is_current:
                     self._current_branch = branch
                     break
@@ -306,8 +322,16 @@ class TwigApp(App[None]):
             return
 
         try:
-            await self.git.checkout_branch(branch.name)
-            self.notify(f"Switched to '{branch.name}'", severity="information")
+            await self.git.checkout_branch(
+                branch.name, is_remote_only=branch.is_remote_only
+            )
+            if branch.is_remote_only:
+                self.notify(
+                    f"Created local branch '{branch.name}' tracking origin",
+                    severity="information",
+                )
+            else:
+                self.notify(f"Switched to '{branch.name}'", severity="information")
             await self._refresh_branches()
         except Exception as e:
             self.notify(f"Checkout failed: {e}", severity="error")
