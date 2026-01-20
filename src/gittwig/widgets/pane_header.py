@@ -16,5 +16,9 @@ class PaneHeader(Static):
     }
     """
 
-    def __init__(self, title: str, **kwargs: Any) -> None:
-        super().__init__(title, **kwargs)
+    def __init__(self, title: str, number: int | None = None, **kwargs: Any) -> None:
+        if number is not None:
+            display = f"[{number}] {title}"
+        else:
+            display = title
+        super().__init__(display, **kwargs)

@@ -34,6 +34,10 @@ class TwigApp(App[None]):
         Binding("P", "pull", "Pull"),
         Binding("h", "focus_left", "Left", show=False),
         Binding("l", "focus_right", "Right", show=False),
+        Binding("0", "focus_pane_0", "Branches", show=False),
+        Binding("1", "focus_pane_1", "Files", show=False),
+        Binding("2", "focus_pane_2", "Commits", show=False),
+        Binding("3", "focus_pane_3", "Diff", show=False),
         Binding("slash", "start_filter", "Search", key_display="/"),
         Binding("escape", "cancel_filter", "Cancel", show=False),
         Binding("enter", "select_item", "Select", show=False),
@@ -45,7 +49,12 @@ class TwigApp(App[None]):
         self._current_branch: Branch | None = None
         self._selected_file: FileChange | None = None
         self._default_branch: str = "main"
-        self._panes: list[str] = ["branch-list", "file-list", "diff-viewer"]
+        self._panes: list[str] = [
+            "branch-list",
+            "file-list",
+            "commit-list",
+            "diff-viewer",
+        ]
         self._current_pane_index: int = 0
         self._filter_active: bool = False
         self._viewing_uncommitted: bool = False
@@ -57,21 +66,21 @@ class TwigApp(App[None]):
         with Horizontal(id="main-container"):
             # Left pane: Branch list
             with Vertical(id="left-pane"):
-                yield PaneHeader("Branches", classes="pane-header")
+                yield PaneHeader("Branches", number=0, classes="pane-header")
                 yield BranchListView(id="branch-list")
 
             # Middle pane: Files and Commits
             with Vertical(id="middle-pane"):
                 with Vertical(id="middle-top"):
-                    yield PaneHeader("Changed Files", classes="pane-header")
+                    yield PaneHeader("Changed Files", number=1, classes="pane-header")
                     yield FileListView(id="file-list")
                 with Vertical(id="middle-bottom"):
-                    yield PaneHeader("Commit History", classes="pane-header")
+                    yield PaneHeader("Commit History", number=2, classes="pane-header")
                     yield CommitListView(id="commit-list")
 
             # Right pane: Diff viewer
             with Vertical(id="right-pane"):
-                yield PaneHeader("Diff View", classes="pane-header")
+                yield PaneHeader("Diff View", number=3, classes="pane-header")
                 yield DiffViewer(id="diff-viewer")
 
         with Container(id="filter-container"):
@@ -92,16 +101,26 @@ class TwigApp(App[None]):
         # Get default branch for comparisons
         self._default_branch = await self.git.get_default_branch()
 
-        # Check if remote origin exists and fetch
-        self._has_remote = await self.git.has_remote_origin()
-        if self._has_remote:
-            await self.git.fetch()
-
-        # Load initial data
+        # Load initial data immediately (local branches only)
         await self._refresh_branches()
 
         # Focus the branch list
         self.query_one("#branch-list").focus()
+
+        # Check if remote origin exists and fetch in background
+        self._has_remote = await self.git.has_remote_origin()
+        if self._has_remote:
+            self.run_worker(self._background_fetch(), exclusive=True)
+
+    async def _background_fetch(self) -> None:
+        """Fetch from remote in background and refresh branches."""
+        try:
+            await self.git.fetch()
+            # Refresh to include remote-only branches
+            await self._refresh_branches()
+        except Exception:
+            # Silently ignore fetch errors on startup
+            pass
 
     async def _refresh_branches(self) -> None:
         """Refresh the branch list."""
@@ -347,6 +366,26 @@ class TwigApp(App[None]):
         if self._current_pane_index < len(self._panes) - 1:
             self._current_pane_index += 1
             self._focus_current_pane()
+
+    def action_focus_pane_0(self) -> None:
+        """Focus the Branches pane."""
+        self._current_pane_index = 0
+        self._focus_current_pane()
+
+    def action_focus_pane_1(self) -> None:
+        """Focus the Changed Files pane."""
+        self._current_pane_index = 1
+        self._focus_current_pane()
+
+    def action_focus_pane_2(self) -> None:
+        """Focus the Commit History pane."""
+        self._current_pane_index = 2
+        self._focus_current_pane()
+
+    def action_focus_pane_3(self) -> None:
+        """Focus the Diff View pane."""
+        self._current_pane_index = 3
+        self._focus_current_pane()
 
     def _focus_current_pane(self) -> None:
         """Focus the current pane."""

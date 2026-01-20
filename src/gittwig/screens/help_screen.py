@@ -8,6 +8,7 @@ HELP_TEXT = """\
 [bold]Navigation[/bold]
   j / k         Move cursor down / up
   h / l         Focus left / right pane
+  0 / 1 / 2 / 3 Focus pane by number
   g g           Go to top of list
   G             Go to bottom of list
   Ctrl+d / u    Page down / up
