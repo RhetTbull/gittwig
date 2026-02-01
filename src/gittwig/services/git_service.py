@@ -511,6 +511,7 @@ class GitService:
                         path=path,
                         change_type=change_type,
                         old_path=old_path,
+                        uncommitted=True,
                     )
         except GitError:
             pass
@@ -533,6 +534,7 @@ class GitService:
                         path=path,
                         change_type=change_type,
                         old_path=old_path,
+                        uncommitted=True,
                     )
         except GitError:
             pass

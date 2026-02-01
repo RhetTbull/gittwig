@@ -57,7 +57,6 @@ class TwigApp(App[None]):
         ]
         self._current_pane_index: int = 0
         self._filter_active: bool = False
-        self._viewing_uncommitted: bool = False
         self._has_remote: bool = False
 
     def compose(self) -> ComposeResult:
@@ -153,17 +152,32 @@ class TwigApp(App[None]):
             # If viewing the default branch, show uncommitted changes
             # Otherwise show changes compared to default branch
             if branch.name == self._default_branch:
-                self._viewing_uncommitted = True
                 files = await self.git.get_uncommitted_changes()
                 commits = await self.git.get_commits(branch.name, base=None, limit=30)
             else:
-                self._viewing_uncommitted = False
                 files = await self.git.get_changed_files(
                     branch.name, self._default_branch
                 )
                 commits = await self.git.get_commits(
                     branch.name, base=self._default_branch, limit=30
                 )
+
+                # Merge uncommitted changes for the currently checked-out branch
+                if branch.is_current:
+                    uncommitted = await self.git.get_uncommitted_changes()
+                    uncommitted_by_path = {f.path: f for f in uncommitted}
+                    merged: list[FileChange] = []
+                    seen_paths: set[str] = set()
+                    for f in files:
+                        if f.path in uncommitted_by_path:
+                            merged.append(uncommitted_by_path[f.path])
+                        else:
+                            merged.append(f)
+                        seen_paths.add(f.path)
+                    for f in uncommitted:
+                        if f.path not in seen_paths:
+                            merged.append(f)
+                    files = merged
 
             file_list = self.query_one("#file-list", FileListView)
             file_list.set_files(files)
@@ -180,7 +194,7 @@ class TwigApp(App[None]):
     async def _load_file_diff(self, file_change: FileChange, branch: Branch) -> None:
         """Load diff for a specific file."""
         try:
-            if self._viewing_uncommitted:
+            if file_change.uncommitted:
                 diff = await self.git.get_uncommitted_file_diff(file_change.path)
             else:
                 diff = await self.git.get_file_diff(file_change.path, branch.name)
