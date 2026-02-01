@@ -80,6 +80,7 @@ class FileChange:
     additions: int = 0
     deletions: int = 0
     old_path: str | None = None  # For renames
+    uncommitted: bool = False
 
     @property
     def display_line(self) -> str:
